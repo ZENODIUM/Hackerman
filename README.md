@@ -2,7 +2,7 @@
 
 POV Hackathon organizer: "Creating and onboarding hackers, tracking and maintaining community, screening of projects for a quick Weekend Hackathon! Jeez"
 
-Enter **Hackerman** 
+Aura Max Organizer: Enter **Hackerman**  
 
 A LangGraph **supervisor** that autonomously routes one organizer message to one of three domain agents. You do not pick Eventbrite vs GitHub vs Discord. The graph does.
 
