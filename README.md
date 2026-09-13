@@ -1,17 +1,124 @@
 # Hackerman
 
-Command Center for running a hackathon with one **supervisor** and four workers: Eventbrite (registration), Discord (community), GitHub (progress), and a 15s Gemini interview. A later graph node **judges** teams (criticizer → promoter → score).
+One supervisor agent that stands up and runs a hackathon across Eventbrite, Discord, and GitHub, then screens participants on camera and judges team repos.
 
-Built for a solo multi-app agent hackathon. One Next.js app, in-process LangGraph.js, Node runtime. No FastAPI, Supabase, or extra MCP servers.
+<p align="center">
+  <img src="screenshots/hackerman_dashboard.png" alt="Hackerman dashboard" width="640" />
+</p>
+<p align="center"><em>Dashboard (Data view) — live pipeline checklist, connection tags, and per-app panes.</em></p>
 
-## Stack
+<p align="center">
+  <img src="screenshots/hackerman_chat.png" alt="Hackerman chat" width="640" />
+</p>
+<p align="center"><em>Chat — action chips and per-agent threads (Supervisor, Onboard, Projects, Community, Interview).</em></p>
 
-- Next.js 16 (App Router) + React 19 + TypeScript + Tailwind
-- LangGraph.js supervisor + `createReactAgent` workers (Gemini)
-- Local JSON store in `data/` (gitignored)
-- Optional: Resend, Langfuse, ngrok
+<p align="center">
+  <img src="screenshots/ai_screening.jpeg" alt="Hackerman AI screening" width="640" />
+</p>
+<p align="center"><em>AI screening — 15s camera + voice interview. Gemini asks one question and scores the clip.</em></p>
 
-## Run
+Built as a solo Next.js app with in-process LangGraph.js. No FastAPI, no Supabase, no extra MCP servers.
+
+Repo: [github.com/ZENODIUM/Hackerman](https://github.com/ZENODIUM/Hackerman)
+
+## Project overview
+
+Hackathon ops are split across ticket pages, Discord, and GitHub. Hackerman is the organizer’s Command Center: one prompt or chip runs a multi-step graph that writes to those apps, then keeps a live checklist of what actually happened.
+
+- Supervisor routes each message to a worker (or a deterministic 11-step stand-up).
+- Workers use Gemini ReAct tools first; keyword paths run if the model misses.
+- Missing API keys fall back to fixtures so the UI still demos.
+- Live vs fixture is visible on every checklist row and in the header tags.
+
+## External apps
+
+The brief asks for at least three. Live writes used in this project:
+
+| App | What the agent does |
+|---|---|
+| Eventbrite | Create / reuse event, ticket class, Discord + GitHub intake questions, publish, sync attendees, reopen sales |
+| Discord | Category, agent rooms, roles, team channels, onboard by username, stall nudge, leaderboard post |
+| GitHub | Create `team-*` repos, health scan (healthy / stalled / noisy), stall issues, sponsor-stack scan, judge scores |
+
+Also used, not counted as the core three:
+
+- Gemini — routing, interview question + scoring, criticizer / promoter / judge
+- Resend — welcome email + Meet link (sandbox; see drawbacks)
+- Langfuse (optional) — supervisor route traces only on the free tier
+- ngrok (optional) — public `/interview` URL for remote participants
+
+## Features
+
+**Command Center**
+
+- Header toggle: Data or Chat (one at a time).
+- Connection tags: Gemini, Eventbrite, Discord, GitHub, Resend, Langfuse.
+- Pipeline checklist (10 rows) with `live` / `fixture` / `unknown`.
+- Data tabs: Hackathons, Registration, Progress, Community, Interview, Board, Ops.
+- Chat chips: stand up, sync + onboard, stuck?, nudge, welcome, interview, judge, post leaderboard.
+- Chat tabs: Supervisor, Onboard, Projects, Community, Interview.
+- Multi-hackathon records; each has its own Eventbrite event and dashboard slice.
+- Copy interview link when `npm run tunnel` is up.
+
+**Supervisor**
+
+- First stand-up asks name, topic, description, price, start, end (or `GENERIC` / `DEFAULTS`).
+- Routes by chip `force`, keywords, or a Gemini one-word label.
+- GitHub → Discord handoff when a team is stalled.
+
+**Registration (Eventbrite + Resend)**
+
+- Event from the brief; ticket sales run through event end (not event start).
+- Reopen / extend an ended event instead of silently reusing it.
+- Intake questions: exact Discord username and GitHub username.
+- Sync attendees; strip Eventbrite `b'Name'` bytes-literal names.
+- Flag low capacity; list incomplete invitees.
+- Welcome email with Discord invite + Meet link.
+
+**Progress (GitHub)**
+
+- Ensure `team-healthy`, `team-stalled`, `team-noisy` (or `GITHUB_REPOS`).
+- Health: stalled if no commit within `GITHUB_STALL_HOURS` (default 5).
+- Noisy vs healthy from commit volume + README.
+- Open stall issues; scan `package.json` + languages for sponsor stack.
+
+**Community (Discord)**
+
+- Hackerman category, per-agent rooms, onboarding / alerts / announcements / mentors.
+- Hacker + Stalled roles (bot role must sit above them).
+- Private team channels; onboard + role assign by username match.
+- Nudge stalled teams; post timeline; matchmake solos; post leaderboard.
+- `/status` is registered; Discord only hits it on a public Interactions URL.
+
+**AI screening (Interview)**
+
+- `/interview`: one spoken Gemini question, 15s webcam + mic.
+- Scores frames + transcript: eye contact, tone, reading from a script.
+- Advance / hold; clip + preview stored locally.
+- Text-only score is marked `heuristic` if video or JSON parse fails.
+
+**Judge**
+
+- Criticizer → promoter → 0–100 GitHub judge per team.
+- Scores on the Board tab; optional Discord #announcements post.
+
+**Stand-up pipeline** (chip: STAND UP HACKATHON), after the brief:
+
+1. Eventbrite event (or reopen sales)
+2. Ticket class
+3. Intake questions
+4. Publish
+5. Discord guild setup
+6. GitHub team repos
+7. Team Discord channels
+8. Sync attendees
+9. Discord onboard
+10. GitHub health scan
+11. Welcome emails
+
+Interview is separate. The organizer or a remote friend opens `/interview`.
+
+## Setup
 
 ```bash
 npm install
@@ -21,115 +128,114 @@ copy .env.example .env.local   # Windows
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Interview room: [http://localhost:3000/interview](http://localhost:3000/interview).
+- App: [http://localhost:3000](http://localhost:3000)
+- Interview: [http://localhost:3000/interview](http://localhost:3000/interview)
 
 ```bash
 npm run eval    # live GitHub health eval (needs GITHUB_TOKEN)
-npm run e2e     # hits local /api/state and interview question
+npm run e2e     # local /api/state + interview question
 npm run tunnel  # ngrok http 3000 — keep npm run dev running
 ```
 
-The dashboard **Copy interview link** button appears when ngrok is up. Send friends `https://YOUR-NGROK-HOST/interview` only. Free ngrok may show a “Visit Site” interstitial once. The URL changes if you restart the tunnel.
+Send participants only `https://YOUR-NGROK-HOST/interview`. Free ngrok may show a Visit Site page once. The host changes if you restart the tunnel.
 
-## Environment
+**Environment** — copy `.env.example` → `.env.local`. Empty keys keep that agent on fixtures.
 
-Copy `.env.example` → `.env.local`. Empty keys mean that agent stays on fixtures / dry-run.
-
-| Variable | Required for live | Notes |
+| Variable | Needed for live | Notes |
 |---|---|---|
-| `GEMINI_API_KEY` | Routing + interview + judge | Default model `gemini-3.5-flash-lite` |
-| `GITHUB_TOKEN` + `GITHUB_OWNER` | Repos + health | Classic PAT, `repo` scope. Owner is your user or an org you already have. |
+| `GEMINI_API_KEY` | Routing, interview, judge | Default model `gemini-3.5-flash-lite` |
+| `GITHUB_TOKEN` + `GITHUB_OWNER` | Repos + health | Classic PAT, parent `repo` scope. Owner must already exist |
 | `GITHUB_REPOS` | Optional | Default `team-healthy,team-stalled,team-noisy` |
 | `GITHUB_STALL_HOURS` | Optional | Default `5` |
-| `DISCORD_BOT_TOKEN` + `DISCORD_GUILD_ID` | Channels, roles, posts | Members Intent on. Bot role above Hacker/Stalled. |
-| `DISCORD_PUBLIC_KEY` | `/status` slash only | Also set Interactions URL to a **public** host |
-| `EVENTBRITE_TOKEN` + `EVENTBRITE_ORGANIZATION_ID` | Create/sync events | Event id is optional; the agent can create one |
-| `RESEND_API_KEY` | Welcome email | Sandbox `onboarding@resend.dev` only delivers to `RESEND_TEST_TO` |
-| `LANGFUSE_*` | Optional | Supervisor traces only on free tier |
+| `DISCORD_BOT_TOKEN` + `DISCORD_GUILD_ID` | Channels, roles, posts | Members Intent on |
+| `DISCORD_PUBLIC_KEY` | `/status` only | Plus a public Interactions URL |
+| `EVENTBRITE_TOKEN` + `EVENTBRITE_ORGANIZATION_ID` | Create / sync events | Event id optional; the agent can create one |
+| `RESEND_API_KEY` | Welcome email | Sandbox from-address only delivers to `RESEND_TEST_TO` |
+| `LANGFUSE_*` | Optional | Supervisor traces only on the free tier |
 
-Channel and role IDs in `.env.example` are optional. The Discord agent creates them and stores IDs in `data/store.json`.
+Discord channel / role IDs in `.env.example` are optional. The bot creates them and stores IDs in `data/store.json`.
 
-Do not commit `.env.local`, `data/store.json`, or interview clips. The redacted Cursor build journal in `agent-logs/` **is** committed (`session.md` + `session.jsonl`). See `.gitignore`.
+Do not commit `.env.local`, `data/store.json`, or interview clips. The redacted build journal in `agent-logs/` is committed.
 
-## UI
+**Discord bot (manual):** Developer Portal → Members Intent on. Invite scope `bot`. Permissions: Manage Channels, Manage Roles, Send Messages, View Channels, Read Message History. Put the bot role above Hacker and Stalled.
 
-Header toggle: **Data** or **Chat** (one at a time).
+**GitHub PAT:** Classic token, parent `repo` scope. The API cannot create a new organization.
 
-**Data**
+**Remote participant:** they do not need your Wi‑Fi for Eventbrite, Discord, or GitHub. Register with exact Discord + GitHub usernames, join the invite, then you hit SYNC + ONBOARD. Forward the Meet / Discord links yourself while Resend is in sandbox. Same LAN is only required if they must open the app without a tunnel.
 
-- Pipeline checklist (10 steps, live vs fixture badges)
-- Tabs: Hackathons, Registration, Progress, Community, Interview, Board, Ops
-- Live feed + pane for the selected tab
+## Reliability testing
 
-**Chat**
+How we know the agent actually wrote to the apps:
 
-- Action chips (stand up, sync, stall, nudge, welcome, judge, leaderboard)
-- Agent tabs: Supervisor, Onboard, Projects, Community, Interview
-- Full-height thread. Running a chip switches you to Chat.
+- Header tags + checklist `live` badges after stand-up.
+- `npm run eval` classifies the three seed repos against `eval/fixtures.json` (healthy / stalled / noisy). Last live run: **3 / 3**.
+- `npm run e2e` hits `/api/state` and the interview question route.
+- Ops tab + `data/agent-runs.jsonl` (local, gitignored). Langfuse gets supervisor routes only.
+- `agent-logs/session.md` + `session.jsonl` — redacted Cursor build journal (committed).
+- Live E2E on this event: Eventbrite event `2000886643814`, Discord guild channels/roles, GitHub repos under `ZENODIUM`, real attendee sync, 15s interview scores, judge board.
 
-**Hackathons tab** — multiple events. Each has its own Eventbrite event and dashboard slice. New hackathon → Chat asks a brief, or fill the form. Empty fields become generic defaults.
-
-## Agents
-
-```
-Organizer (chip or typed prompt)
-        ↓
-  Supervisor (keywords, or Gemini one-word route)
-        ↓
-  pipeline | eventbrite | github | discord | interview | judge
+```bash
+npm run eval
 ```
 
-**Supervisor** — routes. On first stand-up it asks: name, topic, description, ticket price, start, end. Reply with answers or `GENERIC` / `DEFAULTS`.
+writes `eval/results.json`. Without GitHub keys the script records expected labels (dry). With keys it classifies live commits.
 
-**Registration (Eventbrite + Resend)** — create/reuse event, ticket, Discord/GitHub intake questions, publish, sync attendees, reopen sales if dates lapsed, capacity check, incomplete invitees, welcome email + Meet link.
+## Demo video
 
-**Progress (GitHub)** — ensure `team-*` repos, health scan (healthy / stalled / noisy), stall issues, sponsor-stack scan from `package.json` + languages.
+Two minutes or less. Link:
 
-**Community (Discord)** — category, agent rooms, onboarding/alerts/announcements, Hacker + Stalled roles, team channels, onboard + role assign by username, stall nudge, GitHub→Discord handoff, leaderboard post, matchmake solos. `/status` is registered but localhost cannot receive Discord slash hits.
+_Add the unlisted video URL here after upload._
 
-**Interview** — `/interview` records 15s camera + voice. Gemini asks one question, then scores frames + transcript (eye contact, reading from script). Dummy/text fallback is marked `heuristic`.
+Suggested beat sheet: problem → live checklist → Chat chips / stand-up log → Eventbrite attendee + Discord role → Interview rubric → Board + Discord leaderboard → `eval` 3/3.
 
-**Judge** — criticizer, promoter, then a 0–100 GitHub judge. Scores land on Board and can be posted to Discord.
+## Known drawbacks
 
-Workers first try Gemini ReAct tools (`src/lib/tools.ts`). If that fails they fall back to keyword paths. Discord tools are capped so they do not loop past the recursion limit.
+- Resend sandbox (`onboarding@resend.dev`) only delivers to the account inbox (`RESEND_TEST_TO`). Participants do not get mail until a domain is verified.
+- State is a local `data/store.json`. Restarting on another machine, or a new deploy, does not share attendees, clips, or Discord IDs.
+- Command Center has no auth. Anyone who can reach the host can run chips.
+- Interview clips live on disk under `data/interviews/`. They are gitignored and not on object storage.
+- Discord username lookup can miss (search vs exact username / global name / nick). We still post to a channel and log the miss.
+- `/status` never fires against localhost. Discord requires a public Interactions Endpoint URL.
+- Free ngrok: changing URL, Visit Site interstitial, not a stable participant link.
+- Gemini Flash-Lite is cheap and can return non-JSON; interview then shows `scoredBy: heuristic`.
+- Langfuse free tier is supervisor-only. Worker / tool spans stay local.
+- ReAct can fail; workers fall back to keywords. Discord tools are capped to avoid recursion-limit 10.
+- Eventbrite `profile.name` sometimes arrives as Python bytes literals (`b'Jane' b'Doe'`). We unwrap on sync; the API still sends that form.
+- GitHub health eval is three fixture repos, not a full multi-app eval. `team-stalled` can 409 on an empty repo and still classify as stalled.
+- The agent cannot create a new GitHub organization.
+- Eventbrite publish can 400 on some draft/invite states; stand-up continues.
+- Empty live Eventbrite sync does not wipe prior attendees (demo-safe, not a strict source of truth).
 
-## Stand-up pipeline
+## Future steps
 
-Deterministic 11 steps (`force: pipeline` / STAND UP chip), after the brief is confirmed:
+Items below are intentionally out of this build. Most are blocked by paid tiers, verified domains, or always-on hosting cost — not by missing code paths.
 
-1. Eventbrite event (or reopen sales on an ended event)
-2. Ticket class (free or priced from the brief)
-3. Intake questions (Discord + GitHub usernames)
-4. Publish (invite draft is OK if publish 400s)
-5. Discord guild setup
-6. GitHub team repos
-7. Team Discord channels
-8. Sync attendees
-9. Discord onboard
-10. GitHub health scan
-11. Welcome emails
+**Cost / account blockers**
 
-Interview is not in this pipeline. Organizer or a remote friend runs `/interview` separately.
+- Resend: verify a domain and leave the sandbox so every attendee gets the welcome + Meet mail, not just `RESEND_TEST_TO`.
+- Cloud database (Postgres / hosted SQLite equivalent): replace `data/store.json` so multiple organizers, deploys, and restarts share one source of truth. Local disk was free for the hackathon; a hosted DB is not.
+- Object storage (S3 / R2) for interview webm/mp4 instead of gitignored local files.
+- Always-on public host + custom domain so Discord Interactions and `/interview` stay on one HTTPS URL. Free ngrok is not that.
+- Langfuse paid (or self-host): export worker and tool spans, not only supervisor routes.
+- A stronger Gemini model for interview + judge if Flash-Lite JSON / scoring is not enough. Flash-Lite was chosen to stay on the free / low-cost quota.
+- Eventbrite org limits and paid listing features if volume grows past a single demo event.
+- Luma as a second registration provider (same create / ticket / intake / sync tools). Luma’s usable API and higher event volume sit on a paid tier; Eventbrite stays the free-path default until that cost is covered.
 
-## Remote friend (participant)
+**Product improvements (after the cost items)**
 
-They do **not** need your Wi‑Fi for Eventbrite, Discord, or GitHub.
+- Organizer auth and per-hackathon access control.
+- Persist chat threads next to the activity log.
+- Deeper Discord inbound (slash + gateway) once the public URL is stable.
+- Broader evals: Eventbrite sync, Discord role assign, interview rubric fixtures — not only GitHub health.
+- Dedup Eventbrite orders; treat empty live sync as empty, not “keep last demo rows.”
+- Team matching from real GitHub usernames on tickets, not only seed `team-*` repos.
 
-1. You run `npm run dev` and (for interview) `npm run tunnel`.
-2. They register on the Eventbrite URL from the Registration pane. Intake must use their **exact** Discord username and GitHub username.
-3. They join Discord from the Community invite.
-4. You hit **SYNC + ONBOARD**. Roles assign only if the username matches a member already in the server.
-5. Welcome mail goes to **your** Resend inbox while using `onboarding@resend.dev`. Send them the invite and Meet link yourself.
-6. They open the ngrok `/interview` link, allow camera + mic, speak ~15s.
-7. You run **ARE ANY TEAMS STUCK?**, **NUDGE**, **JUDGE**, **POST LEADERBOARD**.
+## Stack
 
-Same Wi‑Fi / LAN is only needed if they must open your laptop’s app without a tunnel.
-
-## Live vs fixture
-
-Header tags show which APIs have keys. Checklist rows show `live` / `fixture` / `unknown`. Missing keys still let the dashboard demo with dry-run activities.
-
-GitHub stall = no commit for `GITHUB_STALL_HOURS` (default 5). Seed repos: `team-healthy` (recent commit + README + stack), `team-stalled` (idle), `team-noisy` (many files, weak README).
+- Next.js 16 (App Router) + React 19 + TypeScript + Tailwind
+- LangGraph.js supervisor + `createReactAgent` workers
+- Local JSON store in `data/` (gitignored)
+- Node runtime only
 
 ## Layout
 
@@ -143,17 +249,8 @@ src/lib/agents/           Eventbrite, Discord, GitHub, Resend, interview, judge
 src/lib/store.ts          multi-hackathon JSON store
 eval/                     GitHub health eval
 agent-logs/               Cursor-agent build journal (committed, secrets redacted)
+screenshots/              dashboard, chat, AI screening
 ```
-
-State: `data/store.json` (gitignored). Product traces: Ops tab + `data/agent-runs.jsonl` (gitignored). Langfuse (optional) gets supervisor routes only. The Cursor build journal (`agent-logs/session.md` and `session.jsonl`) is tracked so judges and clones see how the project was built.
-
-## Discord bot (manual)
-
-Developer Portal → Bot: Members Intent on. Invite scope `bot`. Permissions: Manage Channels, Manage Roles, Send Messages, View Channels, Read History. Put the bot role above Hacker and Stalled. Guild ID from the server. `/status` also needs `DISCORD_PUBLIC_KEY` and Interactions Endpoint URL = `https://YOUR-PUBLIC-HOST/api/discord/interactions`.
-
-## GitHub PAT
-
-Classic token, check the parent `repo` scope. `GITHUB_OWNER` is an existing user or org. The API cannot create a new organization.
 
 ## License
 

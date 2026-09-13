@@ -3,6 +3,7 @@ import "server-only";
 import { env } from "@/lib/env";
 import { eventSalesEnded, genericBrief } from "@/lib/hackathon";
 import { getEventId, sleep } from "@/lib/ids";
+import { attendeeDisplayName } from "@/lib/names";
 import { addActivity, getState, patchPipeline, replaceAttendees, setMeta, upsertAttendees } from "@/lib/store";
 import type { Activity, Attendee, HackathonBrief } from "@/lib/types";
 
@@ -22,6 +23,30 @@ function answerMap(answers: { question?: string; answer?: string }[] | undefined
     if (q.includes("github")) out.github = a.answer ?? "";
   }
   return out;
+}
+
+type EventbriteProfile = {
+  name?: string | { text?: string };
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+};
+
+function mapAttendee(row: {
+  id: string;
+  profile?: EventbriteProfile;
+  answers?: { question?: string; answer?: string }[];
+}): Attendee {
+  const extra = answerMap(row.answers);
+  return {
+    id: row.id,
+    name: attendeeDisplayName(row.profile),
+    email: row.profile?.email ?? "",
+    discord: extra.discord,
+    github: extra.github,
+    checkedIn: false,
+    source: "eventbrite",
+  };
 }
 
 function fixtureAttendees(): Attendee[] {
@@ -55,22 +80,11 @@ export async function syncAttendees(): Promise<{ attendees: Attendee[]; activity
     const json = (await res.json()) as {
       attendees?: {
         id: string;
-        profile?: { name?: string; email?: string };
+        profile?: EventbriteProfile;
         answers?: { question?: string; answer?: string }[];
       }[];
     };
-    attendees = (json.attendees ?? []).map((row) => {
-      const extra = answerMap(row.answers);
-      return {
-        id: row.id,
-        name: row.profile?.name ?? "Unknown",
-        email: row.profile?.email ?? "",
-        discord: extra.discord,
-        github: extra.github,
-        checkedIn: false,
-        source: "eventbrite" as const,
-      };
-    });
+    attendees = (json.attendees ?? []).map(mapAttendee);
     live = true;
     detail = `Synced ${attendees.length} attendee(s) from Eventbrite event ${eventId}.`;
     const ev = await fetch(`${API}/events/${eventId}/`, { headers: headers(), cache: "no-store" });
@@ -441,23 +455,12 @@ export async function listUnregisteredInvitees(): Promise<{ activity: Activity; 
     const json = (await res.json()) as {
       attendees?: {
         id: string;
-        profile?: { name?: string; email?: string };
+        profile?: EventbriteProfile;
         answers?: { question?: string; answer?: string }[];
       }[];
     };
     live = true;
-    const fetched = (json.attendees ?? []).map((row) => {
-      const extra = answerMap(row.answers);
-      return {
-        id: row.id,
-        name: row.profile?.name ?? "Unknown",
-        email: row.profile?.email ?? "",
-        discord: extra.discord,
-        github: extra.github,
-        checkedIn: false,
-        source: "eventbrite" as const,
-      };
-    });
+    const fetched = (json.attendees ?? []).map(mapAttendee);
     emptyLive = fetched.length === 0;
     if (fetched.length) {
       people = fetched;

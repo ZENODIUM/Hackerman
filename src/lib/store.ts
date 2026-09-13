@@ -3,6 +3,7 @@ import "server-only";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { genericBrief } from "@/lib/hackathon";
+import { cleanPersonName } from "@/lib/names";
 import type {
   Activity,
   AppState,
@@ -68,6 +69,23 @@ function summarize(row: DiskHackathon): HackathonSummary {
     eventId: row.eventId,
     eventUrl: row.eventUrl,
   };
+}
+
+function sanitizeAttendee(person: Attendee): Attendee {
+  const name = cleanPersonName(person.name) || person.name;
+  return name === person.name ? person : { ...person, name };
+}
+
+function sanitizeRoot(root: DiskRoot): boolean {
+  let dirty = false;
+  for (const row of root.records) {
+    const attendees = row.attendees.map(sanitizeAttendee);
+    if (attendees.some((person, i) => person !== row.attendees[i])) {
+      row.attendees = attendees;
+      dirty = true;
+    }
+  }
+  return dirty;
 }
 
 function toPublic(root: DiskRoot): AppState {
@@ -147,6 +165,7 @@ function loadRoot(): DiskRoot {
     const id = crypto.randomUUID();
     cache = { currentHackathonId: id, records: [emptySlice(id)] };
   }
+  if (sanitizeRoot(cache)) saveRoot(cache);
   return cache;
 }
 
@@ -213,15 +232,16 @@ export function setSetupPending(pending: boolean) {
 export function upsertAttendees(incoming: Attendee[]): Attendee[] {
   const row = currentRecord();
   const byId = new Map(row.attendees.map((a) => [a.id, a]));
-  for (const item of incoming) byId.set(item.id, { ...byId.get(item.id), ...item });
+  for (const item of incoming) byId.set(item.id, sanitizeAttendee({ ...byId.get(item.id), ...item }));
   const attendees = [...byId.values()];
   writeCurrent({ attendees });
   return attendees;
 }
 
 export function replaceAttendees(incoming: Attendee[]): Attendee[] {
-  writeCurrent({ attendees: incoming });
-  return incoming;
+  const attendees = incoming.map(sanitizeAttendee);
+  writeCurrent({ attendees });
+  return attendees;
 }
 
 export function upsertTeams(incoming: Team[]): Team[] {
