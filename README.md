@@ -1,6 +1,6 @@
 # Hackerman
 
-POV Hackathon organizer: "Creating and oboarding hackers, tracking and maintaining community, quick screening of projects for a Quick Weekend Hackathon! Jeez"
+POV Hackathon organizer: "Creating and onboarding hackers, tracking and maintaining community, quick screening of projects for a Quick Weekend Hackathon! Jeez"
 
 Enter **Hackerman** 
 
