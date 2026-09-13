@@ -235,20 +235,13 @@ Suggested beat sheet: problem → live checklist → Chat chips / stand-up log �
 ## Known drawbacks
 
 - Resend sandbox (`onboarding@resend.dev`) only delivers to the account inbox (`RESEND_TEST_TO`). Participants do not get mail until a domain is verified.
-- State is a local `data/store.json`. Restarting on another machine, or a new deploy, does not share attendees, clips, or Discord IDs.
-- Command Center has no auth. Anyone who can reach the host can run chips.
 - Interview clips live on disk under `data/interviews/`. They are gitignored and not on object storage.
 - Discord username lookup can miss (search vs exact username / global name / nick). We still post to a channel and log the miss.
-- `/status` never fires against localhost. Discord requires a public Interactions Endpoint URL.
 - Free ngrok: changing URL, Visit Site interstitial, not a stable participant link.
-- Gemini Flash-Lite is cheap and can return non-JSON; interview then shows `scoredBy: heuristic`.
 - Langfuse free tier is supervisor-only. Worker / tool spans stay local.
 - ReAct can fail; workers fall back to keywords. Discord tools are capped to avoid recursion-limit 10.
 - Eventbrite `profile.name` sometimes arrives as Python bytes literals (`b'Jane' b'Doe'`). We unwrap on sync; the API still sends that form.
-- GitHub health eval is three fixture repos, not a full multi-app eval. `team-stalled` can 409 on an empty repo and still classify as stalled.
-- The agent cannot create a new GitHub organization.
-- Eventbrite publish can 400 on some draft/invite states; stand-up continues.
-- Empty live Eventbrite sync does not wipe prior attendees (demo-safe, not a strict source of truth).
+
 
 ## Future steps
 
