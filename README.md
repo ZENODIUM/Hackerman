@@ -252,6 +252,4 @@ agent-logs/               Cursor-agent build journal (committed, secrets redacte
 screenshots/              dashboard, chat, AI screening
 ```
 
-## License
 
-Private hackathon project unless you add a license.
