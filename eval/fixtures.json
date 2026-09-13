@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "repo": "team-healthy",
+      "expected": "healthy",
+      "why": "Commit within the last 2 hours and a real README"
+    },
+    {
+      "repo": "team-stalled",
+      "expected": "stalled",
+      "why": "Empty repo or last commit older than GITHUB_STALL_HOURS (default 5h)"
+    },
+    {
+      "repo": "team-noisy",
+      "expected": "noisy",
+      "why": "Many tiny commits and a missing or default README"
+    }
+  ]
+}

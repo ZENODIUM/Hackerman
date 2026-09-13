@@ -1,0 +1,70 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+*.p12
+*.key
+*.pfx
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# secrets — never commit real keys
+.env
+.env.*
+!.env.example
+*.local
+credentials.json
+service-account*.json
+*secret*
+*credentials*
+
+# ngrok / tunnel auth
+ngrok.yml
+.ngrok2/
+
+# local product state (emails, Discord IDs, Eventbrite, interview clips)
+/data/*
+!/data/.gitkeep
+
+# Cursor agent build journal (prompts / local notes)
+/agent-logs/*
+!/agent-logs/.gitkeep
+
+# live eval output (not fixtures)
+/eval/results.json
+
+# recorded interview media
+*.webm
+*.mp4
+*.mov
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

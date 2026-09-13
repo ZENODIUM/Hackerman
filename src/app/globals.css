@@ -1,0 +1,487 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #2c2b28;
+  --paper: #f7f4ee;
+  --paper-2: #efe9dc;
+  --panel: #fffdf8;
+  --accent: #f6e07a;
+  --accent-hover: #edd45c;
+  --accent-2: #f0b4b8;
+  --accent-2-hover: #e49aa0;
+  --accent-3: #a8c8e0;
+  --accent-3-hover: #8fb6d4;
+  --accent-4: #c5ddb0;
+  --accent-4-hover: #b0cf96;
+  --accent-5: #d4c4e8;
+  --accent-5-hover: #c2addc;
+  --accent-6: #e8c9a0;
+  --accent-6-hover: #dbb584;
+  --live: #c5ddb0;
+  --dead: #e4ddd2;
+  --check-done: #d7ebc4;
+  --check-pending: #f7e38a;
+  --check-todo: #ffffff;
+  --pane-feed: #d7e7f4;
+  --pane-attendees: #f7d9c8;
+  --pane-teams: #dcecc8;
+  --pane-discord: #f3cfd4;
+  --pane-interview: #e4d7f2;
+  --pane-ops: #edd6b8;
+  --head-feed: #8fb6d4;
+  --head-attendees: #e8b48a;
+  --head-teams: #b0cf96;
+  --head-discord: #e49aa0;
+  --head-interview: #c2addc;
+  --head-ops: #dbb584;
+  --border: 3px solid var(--ink);
+  --shadow: 6px 6px 0 var(--ink);
+  --shadow-sm: 4px 4px 0 var(--ink);
+  --press: translate(6px, 6px);
+  --press-sm: translate(4px, 4px);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-3: var(--accent-3);
+  --color-accent-4: var(--accent-4);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+*,
+*::before,
+*::after,
+button,
+input,
+textarea,
+select,
+a {
+  border-radius: 0 !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body), "Nunito", "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  background-image:
+    linear-gradient(var(--ink) 0 0),
+    linear-gradient(var(--ink) 0 0);
+  background-size: 100% 3px, 3px 100%;
+  background-position: 0 0, 0 0;
+  background-repeat: no-repeat;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 23px,
+      rgba(17, 17, 17, 0.06) 23px,
+      rgba(17, 17, 17, 0.06) 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 23px,
+      rgba(17, 17, 17, 0.06) 23px,
+      rgba(17, 17, 17, 0.06) 24px
+    );
+}
+
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-display), Impact, "Arial Black", sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 0.9;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+}
+
+.hard-border {
+  border: var(--border);
+}
+
+.block-shadow {
+  box-shadow: var(--shadow);
+}
+
+.block-shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.panel {
+  background: var(--panel);
+  border: var(--border);
+  box-shadow: var(--shadow);
+}
+
+.btn-brutal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border);
+  box-shadow: var(--shadow-sm);
+  background: var(--accent);
+  color: var(--ink);
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.btn-brutal:hover,
+.btn-brutal:active,
+.btn-brutal:focus-visible {
+  background: var(--accent-hover);
+  transform: var(--press-sm);
+  box-shadow: 0 0 0 var(--ink);
+  outline: none;
+}
+
+.btn-brutal:disabled {
+  background: var(--dead);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-pink {
+  background: var(--accent-2);
+  color: var(--ink);
+}
+
+.btn-pink:hover,
+.btn-pink:active,
+.btn-pink:focus-visible {
+  background: var(--accent-2-hover);
+}
+
+.btn-blue {
+  background: var(--accent-3);
+  color: var(--ink);
+}
+
+.btn-blue:hover,
+.btn-blue:active,
+.btn-blue:focus-visible {
+  background: var(--accent-3-hover);
+}
+
+.btn-lime {
+  background: var(--accent-4);
+}
+
+.btn-lime:hover,
+.btn-lime:active,
+.btn-lime:focus-visible {
+  background: var(--accent-4-hover);
+}
+
+.btn-lilac {
+  background: var(--accent-5);
+}
+
+.btn-lilac:hover,
+.btn-lilac:active,
+.btn-lilac:focus-visible {
+  background: var(--accent-5-hover);
+}
+
+.btn-clay {
+  background: var(--accent-6);
+}
+
+.btn-clay:hover,
+.btn-clay:active,
+.btn-clay:focus-visible {
+  background: var(--accent-6-hover);
+}
+
+.chip-brutal {
+  display: inline-block;
+  border: var(--border);
+  box-shadow: 3px 3px 0 var(--ink);
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--font-body), "Nunito", sans-serif;
+  cursor: pointer;
+}
+
+.chip-brutal:hover,
+.chip-brutal:active {
+  background: var(--accent-5);
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.chip-brutal:disabled {
+  background: var(--dead);
+  transform: none;
+}
+
+.input-brutal {
+  width: 100%;
+  border: var(--border);
+  box-shadow: var(--shadow-sm);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-body), "Nunito", sans-serif;
+  outline: none;
+}
+
+.input-brutal:hover {
+  background: #f3efe4;
+}
+
+.input-brutal:focus {
+  background: var(--accent);
+  box-shadow: 0 0 0 var(--ink);
+  transform: var(--press-sm);
+}
+
+.tag {
+  display: inline-block;
+  border: 3px solid var(--ink);
+  padding: 0.1rem 0.45rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.tag-live {
+  background: var(--live);
+}
+
+.tag-dead {
+  background: var(--dead);
+}
+
+.tag-healthy {
+  background: var(--live);
+}
+
+.tag-stalled {
+  background: var(--accent-2);
+  color: var(--ink);
+}
+
+.tag-noisy {
+  background: var(--accent);
+}
+
+.tag-unknown {
+  background: var(--dead);
+}
+
+.tab-brutal {
+  border: var(--border);
+  box-shadow: 4px 4px 0 var(--ink);
+  background: var(--dead);
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tab-brutal[data-active="true"] {
+  background: var(--accent);
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.tab-brutal:hover {
+  background: var(--accent-6);
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.tab-brutal[data-active="true"]:hover {
+  background: var(--accent-hover);
+}
+
+.card-brutal {
+  background: var(--panel);
+  border: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-brutal:hover {
+  background: #f3efe4;
+}
+
+.pane-feed {
+  background: var(--pane-feed);
+}
+
+.pane-attendees {
+  background: var(--pane-attendees);
+}
+
+.pane-teams {
+  background: var(--pane-teams);
+}
+
+.pane-discord {
+  background: var(--pane-discord);
+}
+
+.pane-interview {
+  background: var(--pane-interview);
+}
+
+.pane-ops {
+  background: var(--pane-ops);
+}
+
+.pane-head {
+  border: var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.pane-head-feed {
+  background: var(--head-feed);
+}
+
+.pane-head-attendees {
+  background: var(--head-attendees);
+}
+
+.pane-head-teams {
+  background: var(--head-teams);
+}
+
+.pane-head-discord {
+  background: var(--head-discord);
+}
+
+.pane-head-interview {
+  background: var(--head-interview);
+}
+
+.pane-head-ops {
+  background: var(--head-ops);
+}
+
+.brand-mark {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+.brand-mark svg {
+  display: block;
+}
+
+.check-done,
+.check-pending,
+.check-todo {
+  border: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.check-done {
+  background: var(--check-done);
+}
+
+.check-pending {
+  background: var(--check-pending);
+}
+
+.check-todo {
+  background: var(--check-todo);
+}
+
+.check-done:hover {
+  background: #c5ddb0;
+}
+
+.check-pending:hover {
+  background: #edd45c;
+}
+
+.check-todo:hover {
+  background: #fffdf8;
+}
+
+.feed-card {
+  background: #eef6fb;
+}
+
+.feed-card:hover {
+  background: #e4f0f8;
+}
+
+.attendee-card {
+  background: #fff1e6;
+}
+
+.attendee-card:hover {
+  background: #fbe6d4;
+}
+
+.team-card {
+  background: #eef6e4;
+}
+
+.team-card:hover {
+  background: #e4f0d4;
+}
+
+.rule {
+  height: 3px;
+  background: var(--ink);
+  border: 0;
+}
+
+.chat-user {
+  background: var(--accent-3);
+  color: var(--ink);
+  border: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-assistant {
+  background: var(--accent);
+  color: var(--ink);
+  border: var(--border);
+  box-shadow: var(--shadow-sm);
+}
