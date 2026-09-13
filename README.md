@@ -49,7 +49,7 @@ Copy `.env.example` → `.env.local`. Empty keys mean that agent stays on fixtur
 
 Channel and role IDs in `.env.example` are optional. The Discord agent creates them and stores IDs in `data/store.json`.
 
-Do not commit `.env.local`, `data/store.json`, interview clips, or `agent-logs/`. See `.gitignore`.
+Do not commit `.env.local`, `data/store.json`, or interview clips. The redacted Cursor build journal in `agent-logs/` **is** committed (`session.md` + `session.jsonl`). See `.gitignore`.
 
 ## UI
 
@@ -142,9 +142,10 @@ src/lib/tools.ts          ReAct tools
 src/lib/agents/           Eventbrite, Discord, GitHub, Resend, interview, judge
 src/lib/store.ts          multi-hackathon JSON store
 eval/                     GitHub health eval
+agent-logs/               Cursor-agent build journal (committed, secrets redacted)
 ```
 
-State: `data/store.json`. Traces: Ops tab + `data/agent-runs.jsonl`. Langfuse (optional) gets supervisor routes only.
+State: `data/store.json` (gitignored). Product traces: Ops tab + `data/agent-runs.jsonl` (gitignored). Langfuse (optional) gets supervisor routes only. The Cursor build journal (`agent-logs/session.md` and `session.jsonl`) is tracked so judges and clones see how the project was built.
 
 ## Discord bot (manual)
 

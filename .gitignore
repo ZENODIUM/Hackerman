@@ -50,10 +50,6 @@ ngrok.yml
 /data/*
 !/data/.gitkeep
 
-# Cursor agent build journal (prompts / local notes)
-/agent-logs/*
-!/agent-logs/.gitkeep
-
 # live eval output (not fixtures)
 /eval/results.json
 
