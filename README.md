@@ -194,20 +194,35 @@ Do not commit `.env.local`, `data/store.json`, or interview clips. The redacted 
 
 ## Reliability testing
 
-How we know the agent actually wrote to the apps:
+Two layers: **automated scripts** that can fail CI, and **manual agent runs** against live Eventbrite / Discord / GitHub. **Langfuse** is the observability backend for supervisor routing.
 
-- Header tags + checklist `live` badges after stand-up.
-- `npm run eval` classifies the three seed repos against `eval/fixtures.json` (healthy / stalled / noisy). Last live run: **3 / 3**.
-- `npm run e2e` hits `/api/state` and the interview question route.
-- Ops tab + `data/agent-runs.jsonl` (local, gitignored). Langfuse gets supervisor routes only.
-- `agent-logs/session.md` + `session.jsonl` — redacted Cursor build journal (committed).
-- Live E2E on this event: Eventbrite event `2000886643814`, Discord guild channels/roles, GitHub repos under `ZENODIUM`, real attendee sync, 15s interview scores, judge board.
+**Automated**
+
+- `npm run eval` — GitHub health classifier vs `eval/fixtures.json` (`team-healthy`, `team-stalled`, `team-noisy`). Hits the live GitHub API when `GITHUB_TOKEN` is set. Last live run: **3 / 3**. Writes `eval/results.json`.
+- `npm run e2e` — against a running `npm run dev`: `GET /api/state`, interview question, `POST /api/chat` stand-up (`force: pipeline`), stuck/handoff (`force: github`), state-after, traces. Exits non-zero if any step is 400+ or returns `error`.
+- Checklist + header tags are derived from store + connection keys (`live` / `fixture` / `unknown`). A green row means that step left a real activity, not just a label.
 
 ```bash
 npm run eval
+npm run e2e    # needs the app on :3000
 ```
 
-writes `eval/results.json`. Without GitHub keys the script records expected labels (dry). With keys it classifies live commits.
+**Manual agent tests** (organizer + one remote friend)
+
+- STAND UP — Eventbrite event/ticket/intake, Discord category/roles/channels, GitHub `team-*` repos. Confirm checklist 10/10 and `live` badges.
+- Real tickets — two Eventbrite registrations with exact Discord + GitHub usernames. SYNC + ONBOARD. Confirm attendees (names unwrapped), Hacker role if they already joined the guild.
+- GitHub → Discord — ARE ANY TEAMS STUCK? then NUDGE. `team-stalled` must classify stalled; Discord #alerts + Stalled role.
+- Interview — `/interview` 15s camera. Rubric `scoredBy: gemini` (not heuristic) on the Interview tab.
+- JUDGE + POST LEADERBOARD — Board scores, then #announcements.
+- Fail paths we actually hit: Eventbrite `b'Name'` bytes (now unwrapped), sales ending at event start (now sales through event end), Discord tool recursion-limit 10 (Discord no longer re-calls `check_github_health`).
+
+Live event used for this: Eventbrite `2000886643814`, Discord guild, GitHub under `ZENODIUM`.
+
+**Observability (Langfuse + local)**
+
+- **Langfuse** (`LANGFUSE_PUBLIC_KEY` / `SECRET` / `LANGFUSE_BASE_URL`) records **supervisor routing traces** — which one-word route Gemini chose and the prompt. Free-tier quota: workers and tool spans stay off Langfuse on purpose.
+- Every node still writes a redacted row to `data/agent-runs.jsonl` and `data/traces.jsonl`. The Ops tab reads those. `npm run e2e` asserts traces exist and reports `langfuse: true` when keys are present.
+- `agent-logs/session.md` + `session.jsonl` are the Cursor build journal (committed, secrets redacted).
 
 ## Demo video
 
