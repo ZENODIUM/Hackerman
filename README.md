@@ -224,7 +224,7 @@ Live event used for this: Eventbrite `2000886643814`, Discord guild, GitHub unde
 
 - **Langfuse** (`LANGFUSE_PUBLIC_KEY` / `SECRET` / `LANGFUSE_BASE_URL`) records **supervisor routing traces** — which one-word route Gemini chose and the prompt. Free-tier quota: workers and tool spans stay off Langfuse on purpose.
 - Every node still writes a redacted row to `data/agent-runs.jsonl` and `data/traces.jsonl`. The Ops tab reads those. `npm run e2e` asserts traces exist and reports `langfuse: true` when keys are present.
-- `agent-logs/session.md` + `session.jsonl` are the Cursor build journal (committed, secrets redacted).
+- `agent-logs/session.md` + `session.jsonl` are the Cursor build journal (committed, secrets redacted). Each step is a timestamp, the organizer prompt, and a short agent summary. Judges can open that folder to see the work landed on hackathon day (Sun 13 Sep 2026), not as a dump of finished code with no trail. It is a session record, not a signed clock.
 
 ## Demo video
 
