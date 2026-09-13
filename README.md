@@ -4,10 +4,9 @@ A LangGraph **supervisor** that autonomously routes one organizer message to one
 
 Each worker is its own Gemini ReAct agent with live tools. It decides which API to call, writes to the app, then stops. If GitHub finds a stalled team, the graph **hands off** to Discord without another human prompt.
 
-Live UI (Vercel, fixture data — no live Eventbrite / Discord / GitHub keys): [hackerman-bay.vercel.app](https://hackerman-bay.vercel.app/)
-
 Demo video: [youtu.be/4vCSfrvbJiA](https://youtu.be/4vCSfrvbJiA)
 
+Live UI (Without any Data wired up): [hackerman-bay.vercel.app](https://hackerman-bay.vercel.app/)
 <p align="center">
   <img src="screenshots/hackerman_dashboard.png" alt="Hackerman dashboard" width="640" />
 </p>
