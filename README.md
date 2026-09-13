@@ -4,6 +4,8 @@ POV Hackathon organizer: "Creating and onboarding hackers, tracking and maintain
 
 Aura Max Organizer: Enter **Hackerman** :- (enter phonk song)
 
+Here is how it works,
+
 A LangGraph **supervisor** that autonomously routes one organizer message to one of three domain agents. You do not pick Eventbrite vs GitHub vs Discord. The graph does.
 
 Each worker is its own Gemini ReAct agent with live tools. It decides which API to call, writes to the app, then stops. If GitHub finds a stalled team, the graph **hands off** to Discord without another human prompt.
