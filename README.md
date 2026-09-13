@@ -4,6 +4,21 @@ A LangGraph **supervisor** that autonomously routes one organizer message to one
 
 Each worker is its own Gemini ReAct agent with live tools. It decides which API to call, writes to the app, then stops. If GitHub finds a stalled team, the graph **hands off** to Discord without another human prompt.
 
+<p align="center">
+  <img src="screenshots/hackerman_dashboard.png" alt="Hackerman dashboard" width="640" />
+</p>
+<p align="center"><em>Dashboard (Data view) — live pipeline checklist, connection tags, and per-app panes.</em></p>
+
+<p align="center">
+  <img src="screenshots/hackerman_chat.png" alt="Hackerman chat" width="640" />
+</p>
+<p align="center"><em>Chat — same supervisor box. Chips force a route; typed prompts go through Gemini.</em></p>
+
+<p align="center">
+  <img src="screenshots/ai_screening.jpeg" alt="Hackerman AI screening" width="640" />
+</p>
+<p align="center"><em>AI screening — 15s camera + voice. Separate graph node, not one of the three ops agents.</em></p>
+
 ```
 you type (or hit a chip)
         │
@@ -44,21 +59,6 @@ This is not a scripted “click step 1, then step 2” wizard. The Command Cente
 Next.js + LangGraph.js in one Node process. No FastAPI, no extra MCP servers.
 
 Repo: [github.com/ZENODIUM/Hackerman](https://github.com/ZENODIUM/Hackerman)
-
-<p align="center">
-  <img src="screenshots/hackerman_dashboard.png" alt="Hackerman dashboard" width="640" />
-</p>
-<p align="center"><em>Dashboard (Data view) — live pipeline checklist, connection tags, and per-app panes.</em></p>
-
-<p align="center">
-  <img src="screenshots/hackerman_chat.png" alt="Hackerman chat" width="640" />
-</p>
-<p align="center"><em>Chat — same supervisor box. Chips force a route; typed prompts go through Gemini.</em></p>
-
-<p align="center">
-  <img src="screenshots/ai_screening.jpeg" alt="Hackerman AI screening" width="640" />
-</p>
-<p align="center"><em>AI screening — 15s camera + voice. Separate graph node, not one of the three ops agents.</em></p>
 
 ## External apps
 
