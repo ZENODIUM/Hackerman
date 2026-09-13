@@ -228,7 +228,7 @@ Live event used for this: Eventbrite `2000886643814`, Discord guild, GitHub unde
 
 ## Demo video
 
-Two minutes or less. Link:
+Link: youtube.com/watch?v=4vCSfrvbJiA&feature=youtu.be
 
 _Add the unlisted video URL here after upload._
 
