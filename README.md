@@ -1,6 +1,49 @@
 # Hackerman
 
-One supervisor agent that stands up and runs a hackathon across Eventbrite, Discord, and GitHub, then screens participants on camera and judges team repos.
+A LangGraph **supervisor** that autonomously routes one organizer message to one of three domain agents. You do not pick Eventbrite vs GitHub vs Discord. The graph does.
+
+Each worker is its own Gemini ReAct agent with live tools. It decides which API to call, writes to the app, then stops. If GitHub finds a stalled team, the graph **hands off** to Discord without another human prompt.
+
+```
+you type (or hit a chip)
+        │
+        ▼
+   SUPERVISOR          Gemini one-word route
+   (LangGraph)         force → keywords → model
+        │              pipeline | eventbrite | github | discord | interview | judge
+        ▼
+   ┌────────────┬────────────┬────────────┐
+   │ ONBOARD    │ PROJECTS   │ COMMUNITY  │
+   │ Eventbrite │ GitHub     │ Discord    │
+   │ ReAct +    │ ReAct +    │ ReAct +    │
+   │ 9 tools    │ 5 tools    │ 8 tools    │
+   └────────────┴─────┬──────┴────────────┘
+                      │ stalled?
+                      └──► Discord nudge + Stalled role
+```
+
+## The interesting part: routing and autonomy
+
+This is not a scripted “click step 1, then step 2” wizard. The Command Center is a thin UI over a supervisor that **manages three autonomous workers**.
+
+**Supervisor (the router).** Reads the prompt. If you forced a chip, that wins. Else keywords. Else Gemini must reply with **one word**: `eventbrite`, `github`, `discord`, `interview`, `judge`, `pipeline`, or `finish`. Hop cap is 4. After GitHub, a graph edge sends stalled teams to Discord (`forceHandoff`). The supervisor does not call Eventbrite or Discord itself. It only chooses who acts.
+
+**Onboard agent (Eventbrite).** Owns registration. Tools: create / reopen event, ticket, intake questions (Discord + GitHub usernames), publish, sync attendees, welcome mail, capacity, incomplete invitees. It chooses the subset (max 3 tools, never the same twice). You can say “sales ended” or “who is missing Discord” and it routes here and runs those tools.
+
+**Projects agent (GitHub).** Owns progress. Tools: ensure `team-*` repos, health scan (healthy / stalled / noisy), open a stall issue, sponsor-stack scan, judge. Stall = no commit for `GITHUB_STALL_HOURS`. If any team is stalled, it returns `stalled[]` and the **graph**, not the organizer, wakes Community.
+
+**Community agent (Discord).** Owns people. Tools: guild setup, team channels, onboard + Hacker role by exact username, nudge stalled, handoff from GitHub, leaderboard, timeline, matchmake, support. It does not re-scan GitHub (that loop hit recursion-limit 10). It trusts the handoff payload and posts / assigns.
+
+**Why this is autonomy, not a workflow.**
+
+- One sentence can hit a different agent every time. “Are teams stuck?” is GitHub. “Nudge them” is Discord. “Sync tickets” is Eventbrite. The same chat box, no mode switch required (chips are shortcuts, not the brain).
+- Workers plan their own tool calls via `createReactAgent`. If Gemini fails, a keyword path still finishes so the demo cannot die mid-route.
+- Cross-app management is a **graph edge**: GitHub diagnosis → Discord action. That is the multi-app requirement: the supervisor coordinates, workers execute, apps actually change.
+- Interview and judge are extra nodes (15s camera screen; criticizer → promoter → score). They are not one of the three ops agents.
+
+Next.js + LangGraph.js in one Node process. No FastAPI, no extra MCP servers.
+
+Repo: [github.com/ZENODIUM/Hackerman](https://github.com/ZENODIUM/Hackerman)
 
 <p align="center">
   <img src="screenshots/hackerman_dashboard.png" alt="Hackerman dashboard" width="640" />
@@ -10,25 +53,12 @@ One supervisor agent that stands up and runs a hackathon across Eventbrite, Disc
 <p align="center">
   <img src="screenshots/hackerman_chat.png" alt="Hackerman chat" width="640" />
 </p>
-<p align="center"><em>Chat — action chips and per-agent threads (Supervisor, Onboard, Projects, Community, Interview).</em></p>
+<p align="center"><em>Chat — same supervisor box. Chips force a route; typed prompts go through Gemini.</em></p>
 
 <p align="center">
   <img src="screenshots/ai_screening.jpeg" alt="Hackerman AI screening" width="640" />
 </p>
-<p align="center"><em>AI screening — 15s camera + voice interview. Gemini asks one question and scores the clip.</em></p>
-
-Built as a solo Next.js app with in-process LangGraph.js. No FastAPI, no Supabase, no extra MCP servers.
-
-Repo: [github.com/ZENODIUM/Hackerman](https://github.com/ZENODIUM/Hackerman)
-
-## Project overview
-
-Hackathon ops are split across ticket pages, Discord, and GitHub. Hackerman is the organizer’s Command Center: one prompt or chip runs a multi-step graph that writes to those apps, then keeps a live checklist of what actually happened.
-
-- Supervisor routes each message to a worker (or a deterministic 11-step stand-up).
-- Workers use Gemini ReAct tools first; keyword paths run if the model misses.
-- Missing API keys fall back to fixtures so the UI still demos.
-- Live vs fixture is visible on every checklist row and in the header tags.
+<p align="center"><em>AI screening — 15s camera + voice. Separate graph node, not one of the three ops agents.</em></p>
 
 ## External apps
 
@@ -60,11 +90,10 @@ Also used, not counted as the core three:
 - Multi-hackathon records; each has its own Eventbrite event and dashboard slice.
 - Copy interview link when `npm run tunnel` is up.
 
-**Supervisor**
+**Supervisor** (see routing section above)
 
 - First stand-up asks name, topic, description, price, start, end (or `GENERIC` / `DEFAULTS`).
-- Routes by chip `force`, keywords, or a Gemini one-word label.
-- GitHub → Discord handoff when a team is stalled.
+- Chip `force` overrides the model. Typed chat still goes through Gemini.
 
 **Registration (Eventbrite + Resend)**
 
