@@ -4,6 +4,8 @@ A LangGraph **supervisor** that autonomously routes one organizer message to one
 
 Each worker is its own Gemini ReAct agent with live tools. It decides which API to call, writes to the app, then stops. If GitHub finds a stalled team, the graph **hands off** to Discord without another human prompt.
 
+Demo Video: https://youtu.be/4vCSfrvbJiA
+
 <p align="center">
   <img src="screenshots/hackerman_dashboard.png" alt="Hackerman dashboard" width="640" />
 </p>
