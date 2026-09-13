@@ -4,7 +4,9 @@ A LangGraph **supervisor** that autonomously routes one organizer message to one
 
 Each worker is its own Gemini ReAct agent with live tools. It decides which API to call, writes to the app, then stops. If GitHub finds a stalled team, the graph **hands off** to Discord without another human prompt.
 
-Demo Video: https://youtu.be/4vCSfrvbJiA
+Live UI (Vercel, fixture data — no live Eventbrite / Discord / GitHub keys): [hackerman-bay.vercel.app](https://hackerman-bay.vercel.app/)
+
+Demo video: [youtu.be/4vCSfrvbJiA](https://youtu.be/4vCSfrvbJiA)
 
 <p align="center">
   <img src="screenshots/hackerman_dashboard.png" alt="Hackerman dashboard" width="640" />
@@ -226,13 +228,10 @@ Live event used for this: Eventbrite `2000886643814`, Discord guild, GitHub unde
 - Every node still writes a redacted row to `data/agent-runs.jsonl` and `data/traces.jsonl`. The Ops tab reads those. `npm run e2e` asserts traces exist and reports `langfuse: true` when keys are present.
 - `agent-logs/session.md` + `session.jsonl` are the Cursor build journal (committed, secrets redacted). Each step is a timestamp, the organizer prompt, and a short agent summary. Judges can open that folder to see the work landed on hackathon day (Sun 13 Sep 2026), not as a dump of finished code with no trail. It is a session record, not a signed clock.
 
-## Demo video
+## Demo video and live UI
 
-Link: youtube.com/watch?v=4vCSfrvbJiA&feature=youtu.be
-
-_Add the unlisted video URL here after upload._
-
-Suggested beat sheet: problem → live checklist → Chat chips / stand-up log → Eventbrite attendee + Discord role → Interview rubric → Board + Discord leaderboard → `eval` 3/3.
+- Video (≤2 min): [youtu.be/4vCSfrvbJiA](https://youtu.be/4vCSfrvbJiA)
+- Public UI: [hackerman-bay.vercel.app](https://hackerman-bay.vercel.app/) — same Command Center, fixture / empty store. Live writes stay on the local demo (keys not on Vercel). Interview path: [hackerman-bay.vercel.app/interview](https://hackerman-bay.vercel.app/interview)
 
 ## Known drawbacks
 
