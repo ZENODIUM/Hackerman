@@ -2,7 +2,7 @@
 
 POV Hackathon organizer: "Creating and onboarding hackers, tracking and maintaining community, screening of projects for a quick Weekend Hackathon! Jeez"
 
-Aura Max Organizer: Enter **Hackerman** :- (enter phonk song)
+Aura Max Organizer: Enter **Hackerman** :- 
 
 Here is how it works,
 
